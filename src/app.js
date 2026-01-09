@@ -21,6 +21,11 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api', routes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'Employee Management API', version: '1.0.0' });
+});
+
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running', timestamp: new Date().toISOString() });
