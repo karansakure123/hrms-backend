@@ -8,7 +8,6 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Normalized date (ONLY date, no time)
     date: {
       type: Date,
       required: true,
@@ -39,7 +38,7 @@ const attendanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ One attendance per employee per day
+//  One attendance per employee per day
 attendanceSchema.index(
   { employee: 1, date: 1 },
   { unique: true }
