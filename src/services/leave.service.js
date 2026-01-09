@@ -100,7 +100,7 @@ export const getLeaveSummary = async (userId) => {
   const usedDays = approvedLeaves.reduce((total, leave) => total + leave.totalDays, 0);
 
   return {
-    total: 20, // Fixed total leaves
+    total: user.totalLeaves,
     used: usedDays,
     remaining: user.leaveBalance
   };
