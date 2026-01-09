@@ -1,73 +1,68 @@
 import Attendance from '../models/Attendance.js';
 
-// Check in
+// check in
 export const checkIn = async (employeeId) => {
   const now = new Date();
-  const today = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate()
-  ));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  try {
-    let attendance = await Attendance.findOne({
-      employee: employeeId,
-      date: today,
-    });
+  let attendance = await Attendance.findOne({
+    employee: employeeId,
+    date: today,
+  });
 
-    if (attendance && attendance.checkIn) {
-      throw new Error('Already checked in today');
-    }
-
-    if (!attendance) {
-      attendance = await Attendance.create({
-        employee: employeeId,
-        date: today,
-        checkIn: now,
-        status: 'PRESENT',
-      });
-    } else {
-      attendance.checkIn = now;
-      await attendance.save();
-    }
-
-    return attendance;
-
-  } catch (err) {
-    // Handle Mongo duplicate key safely
-    if (err.code === 11000) {
-      throw new Error('Attendance already exists for today');
-    }
-    throw err;
+  if (attendance && attendance.checkIn) {
+    throw new Error("Already checked in today");
   }
-};
-
-
-// Check out
-export const checkOut = async (employeeId) => {
-  // Create date for today (start of day in UTC)
-  const now = new Date();
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-
-  const attendance = await Attendance.findOne({ employee: employeeId, date: today });
 
   if (!attendance) {
-    throw new Error('No attendance record found for today. Please check in first.');
+    attendance = await Attendance.create({
+      employee: employeeId,
+      date: today,
+      checkIn: now,
+      status: "PRESENT",
+    });
+  } else {
+    attendance.checkIn = now;
+    await attendance.save();
   }
-
-  if (!attendance.checkIn) {
-    throw new Error('Cannot check out without checking in first');
-  }
-
-  if (attendance.checkOut) {
-    throw new Error('Already checked out today');
-  }
-
-  attendance.checkOut = now;
-  await attendance.save();
 
   return attendance;
 };
+
+
+
+
+
+// Check out 
+export const checkOut = async (employeeId) => {
+  const now = new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const attendance = await Attendance.findOne({
+    employee: employeeId,
+    date: today,
+  });
+
+  if (!attendance || !attendance.checkIn) {
+    throw new Error("Check-in required first");
+  }
+
+  if (attendance.checkOut) {
+    throw new Error("Already checked out today");
+  }
+
+  attendance.checkOut = now;
+  attendance.workingMinutes = Math.floor(
+    (attendance.checkOut - attendance.checkIn) / 60000
+  );
+
+  await attendance.save();
+  return attendance;
+};
+
+
 
 // Mark attendance (legacy)
 export const markAttendance = async (employeeId, status) => {

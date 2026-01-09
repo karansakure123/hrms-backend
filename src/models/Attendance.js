@@ -1,14 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
     employee: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
 
-    // Normalized date (start of day)
+    // Normalized date (ONLY date, no time)
     date: {
       type: Date,
       required: true,
@@ -26,10 +26,11 @@ const attendanceSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['PRESENT', 'ABSENT'],
-      default: 'PRESENT',
+      enum: ["PRESENT", "ABSENT"],
+      default: "PRESENT",
     },
 
+    // Calculated in service (checkOut)
     workingMinutes: {
       type: Number,
       default: 0,
@@ -38,23 +39,10 @@ const attendanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/**
- * Ensure:
- * One attendance per employee per day
- */
+// ✅ One attendance per employee per day
 attendanceSchema.index(
   { employee: 1, date: 1 },
   { unique: true }
 );
 
-/**
- * Auto-calculate working hours on check-out
- */
-attendanceSchema.pre('save', function () {
-  if (this.checkIn && this.checkOut) {
-    const diffMs = this.checkOut - this.checkIn;
-    this.workingMinutes = Math.floor(diffMs / (1000 * 60));
-  }
- });
-
-export default mongoose.model('Attendance', attendanceSchema);
+export default mongoose.model("Attendance", attendanceSchema);
