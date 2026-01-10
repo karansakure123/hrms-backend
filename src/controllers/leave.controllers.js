@@ -1,6 +1,6 @@
 import Leave from '../models/Leave.js';
 import User from '../models/User.js';
-import { applyLeave, getUserLeaves, getAllLeaves, updateLeaveStatus, cancelLeave as cancelLeaveService } from '../services/leave.service.js';
+import { applyLeave, getUserLeaves, getAllLeaves, updateLeaveStatus, cancelLeave as cancelLeaveService, calculateLeaveSummary } from '../services/leave.service.js';
 
 // Apply for leave
 export const applyForLeave = async (req, res) => {
@@ -46,12 +46,18 @@ export const updateLeave = async (req, res) => {
 // Get leave summary
 export const getLeaveSummary = async (req, res) => {
   try {
-    const summary = await getLeaveSummary(req.user._id);
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const summary = await calculateLeaveSummary
+      (req.user._id);
+
     res.json(summary);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Cancel leave (employee)
 export const cancelLeave = async (req, res) => {

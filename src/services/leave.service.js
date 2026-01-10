@@ -87,24 +87,29 @@ export const updateLeaveStatus = async (leaveId, status) => {
   return leave;
 };
 
-// Get leave summary for user
-export const getLeaveSummary = async (userId) => {
+
+// leave summary
+export const calculateLeaveSummary = async (userId) => {
   const user = await User.findById(userId);
-  if (!user) throw new Error('User not found');
+  if (!user) throw new Error("User not found");
 
   const approvedLeaves = await Leave.find({
     userId,
-    status: 'APPROVED'
+    status: "APPROVED"
   });
 
-  const usedDays = approvedLeaves.reduce((total, leave) => total + leave.totalDays, 0);
+  const usedDays = approvedLeaves.reduce(
+    (sum, leave) => sum + leave.totalDays,
+    0
+  );
 
   return {
     total: user.totalLeaves,
     used: usedDays,
-    remaining: user.leaveBalance
+    remaining: user.totalLeaves - usedDays
   };
 };
+
 
 // Cancel leave (employee)
 export const cancelLeave = async (leaveId, userId) => {
